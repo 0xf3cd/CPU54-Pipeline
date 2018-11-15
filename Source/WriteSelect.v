@@ -2,7 +2,7 @@ module WriteSelect(
 	input [31:0]addr,
 	input we,
 	output reg DMEM_we,
-	output reg Seg_we,
+	output reg Seg_we
 	// output reg VGA_we,
 	// output reg Timer_we,
 	// output reg EthRst_we,

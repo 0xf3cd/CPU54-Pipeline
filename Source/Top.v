@@ -6,35 +6,9 @@ module Top(
 ); 
 
 	wire clk_cpu;
-	//分频器
-//	(
-//      // Clock out ports
-//      output        clk_out1,
-//      // Status and control signals
-//      input         reset,
-//      output        locked,
-//     // Clock in ports
-//      input         clk_in1
-//     );
-	clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
-	//assign clk_cpu = clk_100;
-//	reg clk_div = 1'b0;
-//	always @(posedge clk_100)
-//        clk_div <= clk_div + 1'b1;
-        
-//    assign clk_cpu = clk_div;
+	//clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
+	assign clk_cpu = clk_100;
 
-    reg clk_1Hz = 1'b0;
-    reg [25:0]timer_clk = 26'b0;
-    always @(posedge clk_100) begin
-    	if(timer_clk == 26'd49999999) begin
-    		timer_clk <= 26'b0;
-    		clk_1Hz <= ~clk_1Hz;
-    	end else begin
-    		timer_clk <= timer_clk + 1'b1;
-    		clk_1Hz <= clk_1Hz;
-    	end
-    end
 
 	wire [31:0]pc;
 	wire [31:0]inst;
@@ -82,7 +56,7 @@ module Top(
 
 	ReadSelect RS(
         .addr(addr),
-        .DMEM(DMEM_out),
+        .DMEM(DMEM_out)
         // .Random(random_out),
         // .Switch(swtich_out),
         // .Timer(Timer_out),
