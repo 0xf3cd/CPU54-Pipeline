@@ -1,14 +1,7 @@
 module ReadSelect(
 	input [31:0]addr,
-	input [31:0]DMEM
-	// input [31:0]Random,
-	// input [31:0]Switch,
-	// input [31:0]Timer,
-	// input [31:0]EthNew,
-	// input [31:0]EthData1,
-	// input [31:0]EthData2,
-	// input [31:0]EthSendFinish,
-	// output reg[31:0]rdata
+	input [31:0]DMEM,
+	output [31:0]rdata
 );
 
 //lw 808 80c 814   820    824      828
@@ -32,6 +25,6 @@ module ReadSelect(
 	// 		rdata = DMEM;
 	// 	end
 	// end
-    //暂时没有需要读取数据的外设
+    //暂时没有�?要读取数据的外设
     assign rdata = DMEM;
 endmodule

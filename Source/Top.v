@@ -6,8 +6,8 @@ module Top(
 ); 
 
 	wire clk_cpu;
-	//clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
-	assign clk_cpu = clk_100;
+	clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
+	//assign clk_cpu = clk_100;
 
 
 	wire [31:0]pc;
@@ -19,12 +19,12 @@ module Top(
    	CPU CPU_(
 	    .clock(clk_cpu),
 	    .reset(reset),
-	    .instruction(inst),//IMEM读出的指令
-	    .read_data(rdata),//DMEM读出的数据
+	    .instruction(inst),//IMEM读出的指�?
+	    .read_data(rdata),//DMEM读出的数�?
 	    .PC(pc),
-	    .DMEM_address(addr),//DMEM的读写地址
-	    .write_data(wdata),//写入DMEM的数据
-	    .DMEM_WRITE(we)//DMEM写有效信号
+	    .DMEM_address(addr),//DMEM的读写地�?
+	    .write_data(wdata),//写入DMEM的数�?
+	    .DMEM_WRITE(we)//DMEM写有效信�?
 	);
 
     wire Seg_we;
@@ -49,21 +49,11 @@ module Top(
 		.we(we),
 		.DMEM_we(DMEM_we),
 		.Seg_we(Seg_we)
-		// .VGA_we(VGA_we),
-		// .Timer_we(Timer_we),
-		// .EthRst_we(EthRst_we)
 	);
 
 	ReadSelect RS(
         .addr(addr),
-        .DMEM(DMEM_out)
-        // .Random(random_out),
-        // .Switch(swtich_out),
-        // .Timer(Timer_out),
-        // .EthNew(EthNew),
-        // .EthData1(EthData1),
-        // .EthData2(EthData2),
-        // .EthSendFinish(EthSendFinish),
-        // .rdata(rdata)
+        .DMEM(DMEM_out),
+        .rdata(rdata)
     );
 endmodule

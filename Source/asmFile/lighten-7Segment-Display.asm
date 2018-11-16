@@ -4,17 +4,16 @@
 #sw 804
 #   Seg
 
-addi $11, $0, 0
+addi $11, $0, 0xffffffff
 addi $10, $0, 0x10010000
 
 update:
 sw   $11, 0x804($10)
-
-addi $1, $0, 0xdddddddd
+addi $9, $0, 0x000fedcb
 
 wait:
-addi $1, $1, -1
-bne  $1, $0, wait
+addi $9, $9, -1
+bne  $9, $0, wait
 
-addi $11, $11, 1
+addi $11, $11, -1
 j    update
