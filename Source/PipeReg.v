@@ -1,5 +1,5 @@
 // MEM WB 间的寄存器
-module pipe_mwreg(
+module Pipe_mwreg(
     input clk,
     input mem_rf_we,
     input [31:0]mem_Z,
@@ -29,7 +29,7 @@ endmodule
 
 
 // EXE MEM 间的寄存器
-module pipe_emreg(
+module Pipe_emreg(
     input clk,
     input exe_rf_we,
     input [31:0]exe_Z,
@@ -61,7 +61,7 @@ module pipe_emreg(
 endmodule
 
 // ID EXE 间的寄存器
-module pipe_iereg(
+module Pipe_iereg(
     input clk,
     input we,
     input [31:0]id_rs_value,
