@@ -17,7 +17,7 @@ module imem(a, spo);
 		for(i = 0; i <= 2047; i = i + 1) begin
 			memory[i] = 32'b0;
 		end
-		$readmemh(("./test.txt"), memory);
+		$readmemh(("./asmFile/hex.txt"), memory);
 	end
 
 	assign spo = memory[a];

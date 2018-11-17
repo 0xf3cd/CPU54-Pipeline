@@ -6,8 +6,8 @@ module Top(
 ); 
 
 	wire clk_cpu;
-	clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
-	//assign clk_cpu = clk_100;
+	//clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
+	assign clk_cpu = clk_100;
 
 
 	wire [31:0]pc;
