@@ -9,7 +9,7 @@ module ProgramCounterReg(clock, reset, enable, data_in, data_out);
 		data_out = 32'h400000;
 	end
 
-	always @(negedge clock or posedge reset) begin
+	always @(posedge clock or posedge reset) begin
 		if(reset) begin
 			data_out <= 32'h400000;
 		end else begin

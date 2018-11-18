@@ -41,8 +41,8 @@ module EXE_BMUX(
     input [1:0]sel,
     output reg [31:0]B
 );
-    /* 00 rd
-     * 01 rt
+    /* 00 se16
+     * 01 ze16
      * 1x rt_value
      */
     always @(*) begin
@@ -51,11 +51,11 @@ module EXE_BMUX(
             B = rt_value;
         end else begin
             if(sel[0]) begin
-                //00
-                B = se16;
-            end else begin
                 //01
                 B = ze16;
+            end else begin
+                //00
+                B = se16;
             end
         end 
     end
@@ -115,11 +115,23 @@ endmodule
 module IF_PC_MUX(
     input [31:0]Adder, //PC + 4
     input [31:0]id_pc,
-    input sel,
-    output [31:0]out
+    input [31:0]now_pc,
+    input [1:0]sel,
+    output reg [31:0]out
 );
-    /* 0 Adder
-     * 1 id_pc
+    /* 00 Adder
+     * 01 id_pc
+     * 1x now_pc
      */
-    assign out = sel? id_pc: Adder;
+    always @(*) begin
+        if(sel[1]) begin
+            out = now_pc;
+        end else begin
+            if(sel[0]) begin
+                out = id_pc;
+            end else begin
+                out = Adder;
+            end
+        end
+    end
 endmodule

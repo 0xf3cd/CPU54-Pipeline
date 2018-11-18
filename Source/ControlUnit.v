@@ -80,13 +80,30 @@
 `define OP_BGEZ 6'b000001
 
 module ID_ControlUnit(
-	input clk,
-	input reset,
 	input [5:0]op,
 	input [4:0]rs,
 	input [5:0]func,
-
-	
+	input exe_rf_we,
+	input [4:0]exe_rf_waddr,
+	input mem_rf_we,
+	input [4:0]mem_rf_waddr,
+	input wb_rf_we,
+	input [4:0]wb_rf_waddr,
+	input [31:0]rs_value,
+	input [31:0]rt_value,
+	output reg id_change_pc,
+	output reg id_stop_pc,
+	output reg [1:0]id_pc_mux_sel,
+	output reg now_rf_we,
+	output reg now_rf_addr_mux_sel,
+	output reg now_rf_data_mux_sel,
+	output reg id_amux_sel, //OK
+	output reg [1:0]id_bmux_sel, //OK
+	output reg [3:0]aluc, //OK
+	output reg id_rf_we,
+	output reg id_rf_waddr,
+	output reg id_rf_data_sel,
+	output reg id_dmem_we
 );
 	
 	wire ADDI = (op == `OP_ADDI);
@@ -144,15 +161,143 @@ module ID_ControlUnit(
 	wire BREAK = (op == `OP_000000 && func == `FUNC_BREAK);
 	wire DIV = (op == `OP_000000 && func == `FUNC_DIV);
 
-	
+	//ALUC输出
+	always @(*) begin
+		if(op == `OP_R_TYPE) begin
+			//R类型操作
+			case(func)
+				`FUNC_ADD: begin
+					aluc = `ALUC_ADD;
+				end
+				`FUNC_ADDU: begin
+					aluc = `ALUC_ADDU;
+				end
+				`FUNC_SUB: begin
+					aluc = `ALUC_SUB;
+				end
+				`FUNC_SUBU: begin
+					aluc = `ALUC_SUBU;
+				end
+				`FUNC_AND: begin
+					aluc = `ALUC_AND;
+				end 
+				`FUNC_OR: begin
+					aluc = `ALUC_OR;
+				end
+				`FUNC_XOR: begin
+					aluc = `ALUC_XOR;
+				end 
+				`FUNC_NOR: begin
+					aluc = `ALUC_NOR;
+				end 
+				`FUNC_SLT: begin
+					aluc = `ALUC_SLT;
+				end 
+				`FUNC_SLTU: begin
+					aluc = `ALUC_SLTU;
+				end
+				`FUNC_SLL: begin
+					aluc = `ALUC_SLL;
+				end 
+				`FUNC_SRL: begin
+					aluc = `ALUC_SRL;
+				end 
+				`FUNC_SRA: begin
+					aluc = `ALUC_SRA;
+				end 
+				`FUNC_SLLV: begin
+					aluc = `ALUC_SLL;
+				end
+				`FUNC_SRLV: begin
+					aluc = `ALUC_SRL;
+				end
+				`FUNC_SRAV: begin
+					aluc = `ALUC_SRA;
+				end
+				default: begin
+					aluc = 4'bxxxx;
+				end
+			endcase
+		end else begin
+			//非R类型操作
+			case(op)
+				`OP_ADDI: begin
+					aluc = `ALUC_ADD;
+				end
+				`OP_ADDIU: begin
+					aluc = `ALUC_ADDU;
+				end
+				`OP_ANDI: begin
+					aluc = `ALUC_AND;
+				end
+				`OP_ORI: begin
+					aluc = `ALUC_OR;
+				end
+				`OP_XORI: begin
+					aluc = `ALUC_XOR;
+				end
+				`OP_LW: begin
+					aluc = `ALUC_ADD;
+				end
+				`OP_SW: begin
+					aluc = `ALUC_ADD;
+				end
+				// `OP_BEQ: begin
+				// 	aluc = `ALUC_SUB;
+				// end
+				// `OP_BNE: begin
+				// 	aluc = `ALUC_SUB;
+				// end
+				`OP_SLTI: begin
+					aluc = `ALUC_SLT;
+				end
+				`OP_SLTIU: begin
+					aluc = `ALUC_SLTU;
+				end
+				`OP_LUI: begin
+					aluc = `ALUC_LUI;
+				end
+				default: begin
+					aluc = 4'bxxxx;
+				end
+			endcase
+		end
+	end
+
+	//id_amux_sel
+	always @(*) begin
+		if(SLL || SRA || SRL) begin
+			id_amux_sel = 1'b0;
+		end else begin
+			id_amux_sel = 1'b1;
+		end
+	end
+
+	//id_bmux_sel
+	always @(*) begin
+		if(ADDI || ADDIU || LUI || LW || SLTI || SW) begin
+			id_bmux_sel = 2'b00;
+		end else if(ANDI || ORI || SLTIU || XORI) begin
+			id_bmux_sel = 2'b01;
+		end else begin
+			id_bmux_sel = 2'b1x;
+		end
+	end
 endmodule
 
 module IF_ControlUnit(
-	input clk,
-	input reset,
 	input id_change_pc, //来自 ID 阶段的控制器的 PC 更改信号，遇到 JAL BEQ 等指令时（可能）会为 1
-	output reg if_pc_mux_sel,
-	output reg IR_we
+	input id_stop_pc, //来自 ID 阶段的控制器信号，是否停止更新 PC 的值
+	output reg [1:0]if_pc_mux_sel
+	// output reg IR_we
 );
-
+	always @(*) begin
+		if(id_change_pc) begin
+			if_pc_mux_sel = 2'b01;
+		end else if(id_stop_pc) begin
+			if_pc_mux_sel = 2'b1x;
+		end else begin
+			if_pc_mux_sel = 2'b00;
+		end
+	end
 endmodule
