@@ -60,3 +60,66 @@ module EXE_BMUX(
         end 
     end
 endmodule
+
+module ID_RF_WAddrMUX(
+    input [4:0]jal_rf_addr,
+    input [4:0]wb_rf_addr,
+    input sel,
+    output [4:0]out
+);
+    /* 0 jal_rf_addr ($31)
+     * 1 wb_rf_addr
+     */
+    assign out = sel? wb_rf_addr: jal_rf_addr;
+endmodule
+
+module ID_RF_WDataMUX(
+    input [31:0]PC,
+    input [31:0]wb_rf_data,
+    input sel,
+    output [31:0]out
+);
+    /* 0 PC
+     * 1 wb_rf_data
+     */
+    assign out = sel? wb_rf_data: PC;
+endmodule
+
+module ID_PC_MUX(
+    input [31:0]Jointer, // ||J
+    input [31:0]rs_value,
+    input [31:0]Adder, // PC + SignExt18
+    input [1:0]sel,
+    output reg [31:0]out
+);
+    /* 00 Jointer
+     * 01 rs_value
+     * 1x Adder
+     */
+    always @(*) begin
+        if(sel[1]) begin
+            //1x
+            out = Adder;
+        end else begin
+            if(sel[0]) begin
+                //01
+                out = rs_value;
+            end else begin
+                //00
+                out = Jointer;
+            end
+        end
+    end
+endmodule
+
+module IF_PC_MUX(
+    input [31:0]Adder, //PC + 4
+    input [31:0]id_pc,
+    input sel,
+    output [31:0]out
+);
+    /* 0 Adder
+     * 1 id_pc
+     */
+    assign out = sel? id_pc: Adder;
+endmodule

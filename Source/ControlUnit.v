@@ -79,47 +79,14 @@
 `define OP_SH 6'b101001
 `define OP_BGEZ 6'b000001
 
-module ControlUnit(
+module ID_ControlUnit(
 	input clk,
 	input reset,
 	input [5:0]op,
 	input [4:0]rs,
 	input [5:0]func,
-	input [31:0]Z,
-	input rs_31,
-	input CLZ_busy,
-	input MDU_busy,
-	input [31:0]CP0_status,
-	output reg [2:0]PCMUX_sel,
-	output reg PC_we,
-	output reg IR_we,
-	//output reg DMEM_CS,
-	//output reg DMEM_R,
-	output reg DMEM_we,
-	output reg [1:0]DMEMMUX_sel,
-	output reg RF_we,
-	output reg [1:0]RFAddrMUX_sel,
-	output reg [3:0]RFDataMUX_sel,
-	output reg [1:0]ALUAMUX_sel,
-	output reg [2:0]ALUBMUX_sel,
-	output reg [3:0]ALUC,
-	output reg Z_we,
-	output reg MDU_start,
-	output reg [1:0]MDUC,
-	output reg SaverMUX_sel,
-	output reg Saver_we,
-	output reg SignExt16MUX_sel,
-	output reg ZeroExt16MUX_sel,
-	output reg CLZCounter_start,
-	output reg HIMUX_sel,
-	output reg HI_we,
-	output reg LOMUX_sel,
-	output reg LO_we,
-	output CP0_mfc0,
-	output CP0_mtc0,
-	output CP0_exception,
-	output CP0_eret,
-	output reg [3:0]CP0_cause
+
+	
 );
 	
 	wire ADDI = (op == `OP_ADDI);
@@ -178,4 +145,14 @@ module ControlUnit(
 	wire DIV = (op == `OP_000000 && func == `FUNC_DIV);
 
 	
+endmodule
+
+module IF_ControlUnit(
+	input clk,
+	input reset,
+	input id_change_pc, //来自 ID 阶段的控制器的 PC 更改信号，遇到 JAL BEQ 等指令时（可能）会为 1
+	output reg if_pc_mux_sel,
+	output reg IR_we
+);
+
 endmodule
