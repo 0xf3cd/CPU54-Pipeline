@@ -1,25 +1,25 @@
 module WB_DataMUX(
     input [31:0]Z,
     input [31:0]Saver,
-    input sel,
-    output [31:0]out
+    input [31:0]NPC,
+    input [1:0]sel,
+    output reg [31:0]out
 );
-    /* 0 Z
-     * 1 Saver
+    /* 00 Z
+     * 01 Saver
+     * 1x NPC
      */
-    assign out = sel? Saver: Z;
-endmodule
-
-module WB_AddrMUX(
-    input [4:0]rt,
-    input [4:0]rd,
-    input sel,
-    output [4:0]out
-);
-    /* 0 rd
-     * 1 rt
-     */
-    assign out = sel? rd: rt;
+    always @(*) begin
+        if(sel[1]) begin
+            out = NPC;
+        end else begin
+            if(sel[0]) begin
+                out = Saver;
+            end else begin
+                out = Z;
+            end
+        end
+    end
 endmodule
 
 module EXE_AMUX(
@@ -31,7 +31,7 @@ module EXE_AMUX(
     /* 0 rs_value
      * 1 ze5
      */
-    assign A = sel? ze5, rs_value;
+    assign A = sel? ze5: rs_value;
 endmodule
 
 module EXE_BMUX(
@@ -59,30 +59,6 @@ module EXE_BMUX(
             end
         end 
     end
-endmodule
-
-module ID_RF_WAddrMUX(
-    input [4:0]jal_rf_addr,
-    input [4:0]wb_rf_addr,
-    input sel,
-    output [4:0]out
-);
-    /* 0 jal_rf_addr ($31)
-     * 1 wb_rf_addr
-     */
-    assign out = sel? wb_rf_addr: jal_rf_addr;
-endmodule
-
-module ID_RF_WDataMUX(
-    input [31:0]PC,
-    input [31:0]wb_rf_data,
-    input sel,
-    output [31:0]out
-);
-    /* 0 PC
-     * 1 wb_rf_data
-     */
-    assign out = sel? wb_rf_data: PC;
 endmodule
 
 module ID_PC_MUX(
@@ -131,6 +107,30 @@ module IF_PC_MUX(
                 out = id_pc;
             end else begin
                 out = Adder;
+            end
+        end
+    end
+endmodule
+
+module ID_WB_RF_WAddr_MUX(
+    input [4:0]rt,
+    input [4:0]rd,
+    input [4:0]reg31,
+    input [1:0]id_rf_waddr_sel,
+    output reg [4:0]out
+);
+    /* 00 rt
+     * 01 rd
+     * 1x reg31
+     */
+    always @(*) begin
+        if(id_rf_waddr_sel[1]) begin
+            out = reg31;
+        end else begin
+            if(id_rf_waddr_sel[0]) begin
+                out = rd;
+            end else begin
+                out = rt;
             end
         end
     end

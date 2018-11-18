@@ -83,28 +83,24 @@
 module ID_ControlUnit(
 	input [5:0]op,
 	input [4:0]rs,
+	input [4:0]rt,
 	input [5:0]func,
 	input exe_rf_we,
 	input [4:0]exe_rf_waddr,
 	input mem_rf_we,
 	input [4:0]mem_rf_waddr,
-	input wb_rf_we,
-	input [4:0]wb_rf_waddr,
 	input [31:0]rs_value,
 	input [31:0]rt_value,
 	output reg id_change_pc, //OK
 	output reg [1:0]id_pc_mux_sel, //OK
-	output reg now_rf_we, //OK
-	output reg now_rf_addr_mux_sel, //OK
-	output reg now_rf_data_mux_sel, //OK
 	output reg id_amux_sel, //OK
 	output reg [1:0]id_bmux_sel, //OK
 	output reg [3:0]aluc, //OK
-	output reg id_stop_pc,
-	output reg id_rf_we,
-	output reg id_rf_waddr,
-	output reg id_rf_data_sel,
-	output reg id_dmem_we
+	output reg id_stop,
+	output reg id_rf_we, //OK
+	output reg [1:0]id_rf_waddr_sel, //OK
+	output reg [1:0]id_rf_data_sel, //OK
+	output reg id_dmem_we //OK
 );
 	
 	wire ADDI = (op == `OP_ADDI);
@@ -165,6 +161,40 @@ module ID_ControlUnit(
 	wire R_TYPE = (op == `OP_R_TYPE);
 	wire J_TYPE = (J || JAL);
 	wire I_TYPE = (~R_TYPE) & (~J_TYPE);
+
+	wire rs_exe_conf = (exe_rf_we && exe_rf_waddr == rs);
+	wire rt_exe_conf = (exe_rf_we && exe_rf_waddr == rt);
+	wire rs_mem_conf = (mem_rf_we && mem_rf_waddr == rs);
+	wire rt_mem_conf = (mem_rf_we && mem_rf_waddr == rt);
+	wire conf = (rs_exe_conf || rt_exe_conf || rs_mem_conf || rt_mem_conf);
+	wire rs_conf = (rs_exe_conf || rs_mem_conf);
+
+	//id_stop
+	always @(*) begin
+		if(R_TYPE) begin
+			if(conf) begin
+				id_stop = 1'b1;
+			end else begin
+				id_stop = 1'b0;
+			end
+		end else if(I_TYPE) begin
+			if(BEQ || BNE) begin
+				if(conf) begin
+					id_stop = 1'b1;
+				end else begin
+					id_stop = 1'b0;
+				end
+			end else begin
+				if(rs_conf) begin
+					id_stop = 1'b1;
+				end else begin
+					id_stop = 1'b0;
+				end
+			end
+		end else begin //J_TYPE
+			id_stop = 1'b0;
+		end
+	end
 
 	//ALUC输出
 	always @(*) begin
@@ -323,36 +353,68 @@ module ID_ControlUnit(
 		end
 	end
 
-	//now_rf_we
+	//id_dmem_we
 	always @(*) begin
-		if(JAL || wb_rf_we) begin
-			now_rf_we = 1'b1;
+		if(SW) begin
+			id_dmem_we = ~id_stop;
 		end else begin
-			now_rf_we = 1'b0;
+			id_dmem_we = 1'b0;
 		end
 	end
 
-	//now_rf_addr_mux_sel
+	//id_rf_we
 	always @(*) begin
-		if(JAL) begin
-			now_rf_addr_mux_sel = 1'b0;
-		end else if(wb_rf_we) begin
-			now_rf_addr_mux_sel = 1'b1;
-		end else begin
-			now_rf_addr_mux_sel = 1'bx;
+		if(R_TYPE) begin
+			if(JR) begin
+				id_rf_we = 1'b0;
+			end else begin
+				id_rf_we = ~id_stop;
+			end
+		end else if(I_TYPE) begin
+			if(BEQ || BNE || SW) begin
+				id_rf_we = 1'b0;
+			end else begin
+				id_rf_we = ~id_stop;
+			end
+		end else begin //J_TYPE
+			if(JAL) begin
+				id_rf_we = ~id_stop;
+			end else begin
+				id_rf_we = 1'b0;
+			end
 		end
 	end
 
-	//now_rf_data_mux_sel
+	//id_rf_waddr_sel
 	always @(*) begin
-		if(JAL) begin
-			now_rf_data_mux_sel = 1'b0;
-		end else if(wb_rf_we) begin
-			now_rf_data_mux_sel = 1'b1;
+		if(R_TYPE) begin
+			id_rf_waddr_sel = 2'b01;
+		end else if(I_TYPE) begin
+			id_rf_waddr_sel = 2'b00;
 		end else begin
-			now_rf_data_mux_sel = 1'bx;
+			id_rf_waddr_sel = 2'b1x;
 		end
 	end
+
+	//id_rf_data_sel
+	always @(*) begin
+		if(LW) begin
+			id_rf_data_sel = 2'b01;
+		end else if(JAL) begin
+			id_rf_data_sel = 2'b1x;
+		end else begin
+			id_rf_data_sel = 2'b00;
+		end
+	end
+
+	//id_lw
+	// always @(*) begin
+	// 	if(LW) begin
+	// 		id_lw = 1'b1;
+	// 	end else begin
+	// 		id_lw = 1'b0;
+	// 	end
+	// end
 endmodule
 
 module IF_ControlUnit(
@@ -362,12 +424,14 @@ module IF_ControlUnit(
 	// output reg IR_we
 );
 	always @(*) begin
-		if(id_change_pc) begin
-			if_pc_mux_sel = 2'b01;
-		end else if(id_stop_pc) begin
+		if(id_stop_pc) begin
 			if_pc_mux_sel = 2'b1x;
 		end else begin
-			if_pc_mux_sel = 2'b00;
+			if(id_change_pc) begin
+				if_pc_mux_sel = 2'b01;
+			end else begin
+				if_pc_mux_sel = 2'b00;
+			end
 		end
 	end
 endmodule
