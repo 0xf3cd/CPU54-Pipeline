@@ -18,6 +18,7 @@
 `define MDUC_DIV 2'b10
 `define MDUC_DIVU 2'b11
 
+`define OP_R_TYPE 6'b000000
 `define OP_000000 6'b000000
 `define FUNC_ADD 6'b100000//==`FUNC_CLZ
 `define FUNC_ADDU 6'b100001
@@ -91,15 +92,15 @@ module ID_ControlUnit(
 	input [4:0]wb_rf_waddr,
 	input [31:0]rs_value,
 	input [31:0]rt_value,
-	output reg id_change_pc,
-	output reg id_stop_pc,
-	output reg [1:0]id_pc_mux_sel,
-	output reg now_rf_we,
-	output reg now_rf_addr_mux_sel,
-	output reg now_rf_data_mux_sel,
+	output reg id_change_pc, //OK
+	output reg [1:0]id_pc_mux_sel, //OK
+	output reg now_rf_we, //OK
+	output reg now_rf_addr_mux_sel, //OK
+	output reg now_rf_data_mux_sel, //OK
 	output reg id_amux_sel, //OK
 	output reg [1:0]id_bmux_sel, //OK
 	output reg [3:0]aluc, //OK
+	output reg id_stop_pc,
 	output reg id_rf_we,
 	output reg id_rf_waddr,
 	output reg id_rf_data_sel,
@@ -160,6 +161,10 @@ module ID_ControlUnit(
 	wire BGEZ = (op == `OP_BGEZ);
 	wire BREAK = (op == `OP_000000 && func == `FUNC_BREAK);
 	wire DIV = (op == `OP_000000 && func == `FUNC_DIV);
+
+	wire R_TYPE = (op == `OP_R_TYPE);
+	wire J_TYPE = (J || JAL);
+	wire I_TYPE = (~R_TYPE) & (~J_TYPE);
 
 	//ALUC输出
 	always @(*) begin
@@ -281,6 +286,71 @@ module ID_ControlUnit(
 			id_bmux_sel = 2'b01;
 		end else begin
 			id_bmux_sel = 2'b1x;
+		end
+	end
+
+	//id_change_pc
+	always @(*) begin
+		if(J || JAL || JR) begin
+			id_change_pc = 1'b1;
+		end else if(BNE) begin
+			if(rs_value == rt_value) begin
+				id_change_pc = 1'b0;
+			end else begin
+				id_change_pc = 1'b1;
+			end
+		end else if(BEQ) begin
+			if(rs_value == rt_value) begin
+				id_change_pc = 1'b1;
+			end else begin
+				id_change_pc = 1'b0;
+			end
+		end else begin
+			id_change_pc = 1'b0;
+		end
+	end
+
+	//id_pc_mux_sel
+	always @(*) begin
+		if(J || JAL) begin
+			id_pc_mux_sel = 2'b00;
+		end else if(JR) begin
+			id_pc_mux_sel = 2'b01;
+		end else if(BNE || BEQ) begin
+			id_pc_mux_sel = 2'b1x;
+		end else begin
+			id_pc_mux_sel = 2'bxx;
+		end
+	end
+
+	//now_rf_we
+	always @(*) begin
+		if(JAL || wb_rf_we) begin
+			now_rf_we = 1'b1;
+		end else begin
+			now_rf_we = 1'b0;
+		end
+	end
+
+	//now_rf_addr_mux_sel
+	always @(*) begin
+		if(JAL) begin
+			now_rf_addr_mux_sel = 1'b0;
+		end else if(wb_rf_we) begin
+			now_rf_addr_mux_sel = 1'b1;
+		end else begin
+			now_rf_addr_mux_sel = 1'bx;
+		end
+	end
+
+	//now_rf_data_mux_sel
+	always @(*) begin
+		if(JAL) begin
+			now_rf_data_mux_sel = 1'b0;
+		end else if(wb_rf_we) begin
+			now_rf_data_mux_sel = 1'b1;
+		end else begin
+			now_rf_data_mux_sel = 1'bx;
 		end
 	end
 endmodule
