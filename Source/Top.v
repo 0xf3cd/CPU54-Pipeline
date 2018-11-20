@@ -6,8 +6,8 @@ module Top(
 ); 
 
 	wire clk_cpu;
-	//clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
-	assign clk_cpu = clk_100;
+	clk_wiz_0 clk_div(.clk_out1(clk_cpu), .reset(reset), .locked(), .clk_in1(clk_100));
+	//assign clk_cpu = clk_100;
 
 
 	wire [31:0]pc;
@@ -19,12 +19,12 @@ module Top(
    	CPU CPU_(
 	    .clock(clk_cpu),
 	    .reset(reset),
-	    .instruction(inst),//IMEM读出的指�?
-	    .read_data(rdata),//DMEM读出的数�?
+	    .instruction(inst),//IMEM读出的指�??
+	    .read_data(rdata),//DMEM读出的数�??
 	    .PC(pc),
-	    .DMEM_address(addr),//DMEM的读写地�?
-	    .write_data(wdata),//写入DMEM的数�?
-	    .DMEM_WRITE(we)//DMEM写有效信�?
+	    .DMEM_address(addr),//DMEM的读写地�??
+	    .write_data(wdata),//写入DMEM的数�??
+	    .DMEM_WRITE(we)//DMEM写有效信�??
 	);
 
     wire Seg_we;

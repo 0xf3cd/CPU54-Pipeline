@@ -302,9 +302,9 @@ module ID_ControlUnit(
 	//id_amux_sel
 	always @(*) begin
 		if(SLL || SRA || SRL) begin
-			id_amux_sel = 1'b0;
-		end else begin
 			id_amux_sel = 1'b1;
+		end else begin
+			id_amux_sel = 1'b0;
 		end
 	end
 
@@ -418,8 +418,8 @@ module ID_ControlUnit(
 endmodule
 
 module IF_ControlUnit(
-	input id_change_pc, //来自 ID 阶段的控制器的 PC 更改信号，遇到 JAL BEQ 等指令时（可能）会为 1
-	input id_stop_pc, //来自 ID 阶段的控制器信号，是否停止更新 PC 的值
+	input id_change_pc, //来自 ID 阶段的控制器�? PC 更改信号，遇�? JAL BEQ 等指令时（可能）会为 1
+	input id_stop_pc, //来自 ID 阶段的控制器信号，是否停止更�? PC 的�??
 	output reg [1:0]if_pc_mux_sel
 	// output reg IR_we
 );

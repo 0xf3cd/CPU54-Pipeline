@@ -14,26 +14,27 @@ module WriteSelect(
 //   VGA Seg Timer EthRst
 
     always @(*) begin
-        if(addr[11] == 1'b1) begin //æ˜¯å¤–è®¾
-            case(addr[11:0])
-                12'h804: begin
-                    Seg_we = we;
-                    DMEM_we = 1'b0;
-                end
-                default: begin
-                    Seg_we = 1'b0;
-                    DMEM_we = 1'b0;
-                end
-            endcase
-        end else begin //æ™®é€š DMEM å†™æ“ä½œ
-            DMEM_we = 1'b1;
-            Seg_we = 1'b0;
-        end
+        // if(addr[11] == 1'b1) begin //ÊÇÍâ??
+            
+        // end else begin //ÆÕ??? DMEM Ğ´²Ù??
+        //     DMEM_we = we;
+        //     Seg_we = 1'b0;
+        // end
+		case(addr[11:0])
+			12'hf04: begin
+				Seg_we = we;
+				DMEM_we = 1'b0;
+			end
+			default: begin
+				Seg_we = 1'b0;
+				DMEM_we = we;
+			end
+		endcase
     end
 
 	// always @(*) begin
 	// 	if(addr[11] == 1'b1) begin
-	// 		//å¤–è®¾
+	// 		//ÍâÉè
 	// 		case(addr[11:0])
 	// 			12'h800: begin
 	// 				VGA_we = we;
@@ -100,7 +101,7 @@ module WriteSelect(
 	// 			end
 	// 		endcase
 	// 	end else begin
-	// 		//æ™®é€šDMEM
+	// 		//ÆÕ???DMEM
 	// 		VGA_we = 1'b0;
 	// 		Seg_we = 1'b0;
 	// 		DMEM_we = we;
