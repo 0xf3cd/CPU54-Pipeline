@@ -136,11 +136,11 @@ module ID_WB_RF_WAddr_MUX(
     end
 endmodule
 
-module ID_INST_MUX(
-    input [31:0]inst,
-    input [31:0]pre_inst,
-    input stop,
-    output [31:0]out
-);
-    assign out = stop? pre_inst: inst;
-endmodule
+// module ID_INST_MUX(
+//     input [31:0]inst,
+//     input [31:0]pre_inst,
+//     input stop,
+//     output [31:0]out
+// );
+//     assign out = stop? pre_inst: inst;
+// endmodule

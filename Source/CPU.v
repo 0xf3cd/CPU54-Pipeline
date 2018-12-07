@@ -16,15 +16,51 @@ module CPU(
     wire [31:0]next_pc;
     wire id_change_pc; //来自于 CU_ID
     wire id_stop; //来自于 CU_ID
-    wire [31:0]pre_pc;
-    wire [31:0]pre_inst;
 
     assign NPC = PC + 32'd4;
+
+    wire exe_rf_we;
+    wire [4:0]exe_rf_waddr;
+    wire mem_rf_we;
+    wire [4:0]mem_rf_waddr;
+
+    wire [5:0]if_op;
+	wire [4:0]if_rs;
+	wire [4:0]if_rt;
+	wire [4:0]if_rd;
+	wire [4:0]if_shamt;
+	wire [5:0]if_func;
+	wire [15:0]if_imm16;
+	wire [25:0]if_index;
+    InstructionDecoder IF_ID(
+        .instruction(instruction), 
+        .op(if_op), 
+        .rs(if_rs), 
+        .rt(if_rt), 
+        .rd(if_rd), 
+        .shamt(if_shamt), 
+        .func(if_func), 
+        .imm16(if_imm16), 
+        .index(if_index)
+    );
+
+    wire if_stop;
+    StopJudger IF_SJ(
+        if_op, //input [5:0]op,
+        if_rs, //input [4:0]rs,
+        if_rt, //input [4:0]rt,
+        if_func, //input [5:0]func,
+        exe_rf_we, //input exe_rf_we,
+        exe_rf_waddr, //input [4:0]exe_rf_waddr,
+        mem_rf_we, //input mem_rf_we,
+        mem_rf_waddr, //input [4:0]mem_rf_waddr,
+        if_stop //output reg if_stop
+    );
 
     IF_PC_MUX IFPM(
         .Adder(NPC), //PC + 4
         .id_pc(id_pc),
-        .now_pc(pre_pc),//.now_pc(PC),
+        .now_pc(PC),
         .sel(if_pc_mux_sel),
         .out(next_pc)
     );
@@ -37,18 +73,9 @@ module CPU(
         .data_out(PC)
     );
 
-    PcInstSaver PIS(
-        .clk(clock),
-        .pc(PC),
-        .inst(instruction),
-        .stop(id_stop),
-        .previous_pc(pre_pc),
-        .previous_inst(pre_inst)
-    );
-
     IF_ControlUnit IFC(
         .id_change_pc(id_change_pc),
-        .id_stop_pc(id_stop),
+        .id_stop_pc(if_stop), //(id_stop),
         .if_pc_mux_sel(if_pc_mux_sel)
     );
     
@@ -74,17 +101,9 @@ module CPU(
 	wire [5:0]func;
 	wire [15:0]imm16;
 	wire [25:0]index;
-    wire [31:0]out_inst;
-
-    ID_INST_MUX IIM(
-        .inst(id_inst),
-        .pre_inst(pre_inst),
-        .stop(id_stop),
-        .out(out_inst)
-    );
 
     InstructionDecoder ID(
-        .instruction(out_inst), 
+        .instruction(id_inst), 
         .op(op), 
         .rs(rs), 
         .rt(rt), 
@@ -151,10 +170,6 @@ module CPU(
         .out(id_rf_waddr)
     );
 
-    wire exe_rf_we;
-    wire [4:0]exe_rf_waddr;
-    wire mem_rf_we;
-    wire [4:0]mem_rf_waddr;
     wire id_amux_sel;
     wire [1:0]id_bmux_sel;
     wire [3:0]aluc;
