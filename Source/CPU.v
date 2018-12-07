@@ -35,6 +35,16 @@ module CPU(
         .data_out(PC)
     );
 
+    wire [31:0]pre_pc;
+    wire [31:0]pre_inst;
+    PcInstSaver PIS(
+        .clk(clock),
+        .pc(PC),
+        .inst(instruction),
+        .previous_pc(),
+        .previous_inst()
+    );
+
     IF_ControlUnit IFC(
         .id_change_pc(id_change_pc),
         .id_stop_pc(id_stop),

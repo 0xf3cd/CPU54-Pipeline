@@ -107,28 +107,28 @@ module Adder_32bits(a,b,carry_in,sum,carry_out);//32位超前进位加法器
 	Adder_16bits Adder_16bits_2(a[31:16], b[31:16], carry_temp, sum[31:16], g[1], p[1]);
 endmodule
 
-module Adder_64bits(a, b, carry_in, sum, carry_out);//64位超前进位加法器
-	input [63:0]a;
-	input [63:0]b;
-	input carry_in;
-	output [63:0]sum;
-	output carry_out;
+// module Adder_64bits(a, b, carry_in, sum, carry_out);//64位超前进位加法器
+// 	input [63:0]a;
+// 	input [63:0]b;
+// 	input carry_in;
+// 	output [63:0]sum;
+// 	output carry_out;
 
-	wire [3:0]g;
-	wire [3:0]p;
-	wire [4:1]carry;
-	wire g_out;
-	wire p_out;
+// 	wire [3:0]g;
+// 	wire [3:0]p;
+// 	wire [4:1]carry;
+// 	wire g_out;
+// 	wire p_out;
 
-	Adder_16bits adder_16_1(a[15:0], b[15:0], carry_in, sum[15:0], g[0], p[0]);
-	Adder_16bits adder_16_2(a[31:16], b[31:16], carry[1], sum[31:16], g[1], p[1]);
-	Adder_16bits adder_16_3(a[47:32], b[47:32], carry[2], sum[47:32], g[2], p[2]);
-	Adder_16bits adder_16_4(a[63:48], b[63:48], carry[3], sum[63:48], g[3], p[3]);
+// 	Adder_16bits adder_16_1(a[15:0], b[15:0], carry_in, sum[15:0], g[0], p[0]);
+// 	Adder_16bits adder_16_2(a[31:16], b[31:16], carry[1], sum[31:16], g[1], p[1]);
+// 	Adder_16bits adder_16_3(a[47:32], b[47:32], carry[2], sum[47:32], g[2], p[2]);
+// 	Adder_16bits adder_16_4(a[63:48], b[63:48], carry[3], sum[63:48], g[3], p[3]);
 
-	cla_4bits CLA(g, p, carry_in, carry, g_out, p_out);
+// 	cla_4bits CLA(g, p, carry_in, carry, g_out, p_out);
 
-	assign carry_out = carry[4];
-endmodule
+// 	assign carry_out = carry[4];
+// endmodule
 
 module negate_32bits(to_operate, operator, result);
 	input [31:0]to_operate;

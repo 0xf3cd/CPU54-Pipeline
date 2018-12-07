@@ -162,10 +162,10 @@ module ID_ControlUnit(
 	wire J_TYPE = (J || JAL);
 	wire I_TYPE = (~R_TYPE) & (~J_TYPE);
 
-	wire rs_exe_conf = (exe_rf_we && exe_rf_waddr == rs);
-	wire rt_exe_conf = (exe_rf_we && exe_rf_waddr == rt);
-	wire rs_mem_conf = (mem_rf_we && mem_rf_waddr == rs);
-	wire rt_mem_conf = (mem_rf_we && mem_rf_waddr == rt);
+	wire rs_exe_conf = (exe_rf_we && exe_rf_waddr == rs && exe_rf_waddr != 5'b0);
+	wire rt_exe_conf = (exe_rf_we && exe_rf_waddr == rt && exe_rf_waddr != 5'b0);
+	wire rs_mem_conf = (mem_rf_we && mem_rf_waddr == rs && mem_rf_waddr != 5'b0);
+	wire rt_mem_conf = (mem_rf_we && mem_rf_waddr == rt && mem_rf_waddr != 5'b0);
 	wire conf = (rs_exe_conf || rt_exe_conf || rs_mem_conf || rt_mem_conf);
 	wire rs_conf = (rs_exe_conf || rs_mem_conf);
 
@@ -418,8 +418,8 @@ module ID_ControlUnit(
 endmodule
 
 module IF_ControlUnit(
-	input id_change_pc, //来自 ID 阶段的控制器�? PC 更改信号，遇�? JAL BEQ 等指令时（可能）会为 1
-	input id_stop_pc, //来自 ID 阶段的控制器信号，是否停止更�? PC 的�??
+	input id_change_pc, //来自 ID 阶段的控制器�? PC 更改信号，遇�? JAL BEQ 等指令时（可能）会为 1
+	input id_stop_pc, //来自 ID 阶段的控制器信号，是否停止更�? PC 的�??
 	output reg [1:0]if_pc_mux_sel
 	// output reg IR_we
 );
