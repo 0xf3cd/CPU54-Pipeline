@@ -16,17 +16,19 @@ module CPU(
     wire [31:0]next_pc;
     wire id_change_pc; //来自于 CU_ID
     wire id_stop; //来自于 CU_ID
+    wire [31:0]pre_pc;
+    wire [31:0]pre_inst;
 
     assign NPC = PC + 32'd4;
 
     IF_PC_MUX IFPM(
         .Adder(NPC), //PC + 4
         .id_pc(id_pc),
-        .now_pc(PC),
+        .now_pc(pre_pc),//.now_pc(PC),
         .sel(if_pc_mux_sel),
         .out(next_pc)
     );
-
+    
     ProgramCounterReg PC_(
         .clock(clock),
         .reset(reset),
@@ -35,14 +37,13 @@ module CPU(
         .data_out(PC)
     );
 
-    wire [31:0]pre_pc;
-    wire [31:0]pre_inst;
     PcInstSaver PIS(
         .clk(clock),
         .pc(PC),
         .inst(instruction),
-        .previous_pc(),
-        .previous_inst()
+        .stop(id_stop),
+        .previous_pc(pre_pc),
+        .previous_inst(pre_inst)
     );
 
     IF_ControlUnit IFC(
@@ -73,8 +74,17 @@ module CPU(
 	wire [5:0]func;
 	wire [15:0]imm16;
 	wire [25:0]index;
+    wire [31:0]out_inst;
+
+    ID_INST_MUX IIM(
+        .inst(id_inst),
+        .pre_inst(pre_inst),
+        .stop(id_stop),
+        .out(out_inst)
+    );
+
     InstructionDecoder ID(
-        .instruction(id_inst), 
+        .instruction(out_inst), 
         .op(op), 
         .rs(rs), 
         .rt(rt), 
