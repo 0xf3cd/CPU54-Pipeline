@@ -15,10 +15,12 @@ module CPU(
     wire [1:0]if_pc_mux_sel;
     wire [31:0]next_pc;
     wire id_change_pc; //来自于 CU_ID
-    wire id_stop; //来自于 CU_ID
+    // wire id_stop; //来自于 CU_ID
 
     assign NPC = PC + 32'd4;
 
+    wire id_rf_we;
+    wire [4:0]id_rf_waddr;
     wire exe_rf_we;
     wire [4:0]exe_rf_waddr;
     wire mem_rf_we;
@@ -44,18 +46,20 @@ module CPU(
         .index(if_index)
     );
 
-    wire if_stop;
-    StopJudger IF_SJ(
-        if_op, //input [5:0]op,
-        if_rs, //input [4:0]rs,
-        if_rt, //input [4:0]rt,
-        if_func, //input [5:0]func,
-        exe_rf_we, //input exe_rf_we,
-        exe_rf_waddr, //input [4:0]exe_rf_waddr,
-        mem_rf_we, //input mem_rf_we,
-        mem_rf_waddr, //input [4:0]mem_rf_waddr,
-        if_stop //output reg if_stop
-    );
+    // wire if_stop;
+    // StopJudger IF_SJ(
+    //     if_op, //input [5:0]op,
+    //     if_rs, //input [4:0]rs,
+    //     if_rt, //input [4:0]rt,
+    //     if_func, //input [5:0]func,
+    //     id_rf_we, //input id_rf_we,
+    //     id_rf_waddr, //input [4:0]id_rf_waddr,
+    //     exe_rf_we, //input exe_rf_we,
+    //     exe_rf_waddr, //input [4:0]exe_rf_waddr,
+    //     mem_rf_we, //input mem_rf_we,
+    //     mem_rf_waddr, //input [4:0]mem_rf_waddr,
+    //     if_stop //output reg if_stop
+    // );
 
     IF_PC_MUX IFPM(
         .Adder(NPC), //PC + 4
@@ -75,7 +79,7 @@ module CPU(
 
     IF_ControlUnit IFC(
         .id_change_pc(id_change_pc),
-        .id_stop_pc(if_stop), //(id_stop),
+        // .id_stop_pc(if_stop), //(id_stop),
         .if_pc_mux_sel(if_pc_mux_sel)
     );
     
@@ -87,9 +91,11 @@ module CPU(
         .reset(reset),
         .we(1'b1),
         .inst(instruction),
+        // .if_stop(if_stop),
         .NPC(NPC),
         .id_inst(id_inst),
         .id_NPC(id_NPC)
+        // .id_stop(id_stop)
     );
 
     //ID 部分
@@ -161,7 +167,7 @@ module CPU(
     );
 
     wire [1:0]id_rf_waddr_sel;
-    wire [4:0]id_rf_waddr;
+    // wire [4:0]id_rf_waddr;
     ID_WB_RF_WAddr_MUX IWRWM(
         .rt(rt),
         .rd(rd),
@@ -173,7 +179,7 @@ module CPU(
     wire id_amux_sel;
     wire [1:0]id_bmux_sel;
     wire [3:0]aluc;
-    wire id_rf_we;
+    // wire id_rf_we;
     wire [1:0]id_rf_data_sel;
     wire id_dmem_we;
     ID_ControlUnit IDC(
@@ -187,12 +193,13 @@ module CPU(
         .mem_rf_waddr(mem_rf_waddr),
         .rs_value(rs_value),
         .rt_value(rt_value),
+        // .id_stop(id_stop),
         .id_change_pc(id_change_pc), //OK
         .id_pc_mux_sel(id_pc_mux_sel), //OK
         .id_amux_sel(id_amux_sel), //OK
         .id_bmux_sel(id_bmux_sel), //OK
         .aluc(aluc), //OK
-        .id_stop(id_stop),
+        // .id_stop(id_stop),
         .id_rf_we(id_rf_we), //OK
         .id_rf_waddr_sel(id_rf_waddr_sel), //OK
         .id_rf_data_sel(id_rf_data_sel), //OK
