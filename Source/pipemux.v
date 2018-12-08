@@ -2,16 +2,22 @@ module WB_DataMUX(
     input [31:0]Z,
     input [31:0]Saver,
     input [31:0]NPC,
+    input [31:0]MDU_out,
     input [1:0]sel,
     output reg [31:0]out
 );
     /* 00 Z
      * 01 Saver
-     * 1x NPC
+     * 10 NPC
+     * 11 MDU_out
      */
     always @(*) begin
         if(sel[1]) begin
-            out = NPC;
+            if(sel[0]) begin
+                out = MDU_out;
+            end else begin
+                out = NPC;
+            end
         end else begin
             if(sel[0]) begin
                 out = Saver;

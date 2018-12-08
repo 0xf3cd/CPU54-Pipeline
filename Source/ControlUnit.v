@@ -159,44 +159,6 @@ module ID_ControlUnit(
 	wire BREAK = (op == `OP_000000 && func == `FUNC_BREAK);
 	wire DIV = (op == `OP_000000 && func == `FUNC_DIV);
 
-	// wire R_TYPE = (op == `OP_R_TYPE);
-	// wire J_TYPE = (J || JAL);
-	// wire I_TYPE = (ADDI || );
-
-	// wire rs_exe_conf = (exe_rf_we && exe_rf_waddr == rs && exe_rf_waddr != 5'b0);
-	// wire rt_exe_conf = (exe_rf_we && exe_rf_waddr == rt && exe_rf_waddr != 5'b0);
-	// wire rs_mem_conf = (mem_rf_we && mem_rf_waddr == rs && mem_rf_waddr != 5'b0);
-	// wire rt_mem_conf = (mem_rf_we && mem_rf_waddr == rt && mem_rf_waddr != 5'b0);
-	// wire conf = (rs_exe_conf || rt_exe_conf || rs_mem_conf || rt_mem_conf);
-	// wire rs_conf = (rs_exe_conf || rs_mem_conf);
-
-	// //id_stop
-	// always @(*) begin
-	// 	if(R_TYPE) begin
-	// 		if(conf) begin
-	// 			id_stop = 1'b1;
-	// 		end else begin
-	// 			id_stop = 1'b0;
-	// 		end
-	// 	end else if(I_TYPE) begin
-	// 		if(BEQ || BNE) begin
-	// 			if(conf) begin
-	// 				id_stop = 1'b1;
-	// 			end else begin
-	// 				id_stop = 1'b0;
-	// 			end
-	// 		end else begin
-	// 			if(rs_conf) begin
-	// 				id_stop = 1'b1;
-	// 			end else begin
-	// 				id_stop = 1'b0;
-	// 			end
-	// 		end
-	// 	end else begin //J_TYPE
-	// 		id_stop = 1'b0;
-	// 	end
-	// end
-
 	//ALUC输出
 	always @(*) begin
 		if(op == `OP_R_TYPE) begin
@@ -363,35 +325,11 @@ module ID_ControlUnit(
 		end
 	end
 
-	//id_rf_we
-	// always @(*) begin
-	// 	if(R_TYPE) begin
-	// 		if(JR) begin
-	// 			id_rf_we = 1'b0;
-	// 		end else begin
-	// 			id_rf_we = ~id_stop;
-	// 		end
-	// 	end else if(I_TYPE) begin
-	// 		if(BEQ || BNE || SW) begin
-	// 			id_rf_we = 1'b0;
-	// 		end else begin
-	// 			id_rf_we = ~id_stop;
-	// 		end
-	// 	end else if(J_TYPE) begin //J_TYPE
-	// 		if(JAL) begin
-	// 			id_rf_we = ~id_stop;
-	// 		end else begin
-	// 			id_rf_we = 1'b0;
-	// 		end
-	// 	end else begin 
-	// 		id_rf_we = 1'b0;
-	// 	end
-	// end
 	always @(*) begin
 		// if(BEQ || BNE || SW || J || JAL || JR) begin
 		// 	id_rf_we = 1'b0;
 		// end
-		if(ADDI||ADDIU||ANDI||LUI||LW||ORI||SLTI||SLTIU||XORI||ADD|ADDU||AND||NOR||OR||SLL||SLLV||SLT||SLTU||SRA||SRAV||SRL||SRLV||SUB||SUBU||XOR) begin
+		if(ADDI||ADDIU||ANDI||LUI||LW||ORI||SLTI||SLTIU||XORI||ADD|ADDU||AND||NOR||OR||SLL||SLLV||SLT||SLTU||SRA||SRAV||SRL||SRLV||SUB||SUBU||XOR||MUL) begin
 			id_rf_we = 1'b1; //~id_stop;
 		end else begin
 			id_rf_we = 1'b0;
@@ -414,38 +352,21 @@ module ID_ControlUnit(
 		if(LW) begin
 			id_rf_data_sel = 2'b01;
 		end else if(JAL) begin
-			id_rf_data_sel = 2'b1x;
+			id_rf_data_sel = 2'b10;
+		end else if(MUL) begin
+			id_rf_data_sel = 2'b11;
 		end else begin
 			id_rf_data_sel = 2'b00;
 		end
 	end
 
-	//id_lw
-	// always @(*) begin
-	// 	if(LW) begin
-	// 		id_lw = 1'b1;
-	// 	end else begin
-	// 		id_lw = 1'b0;
-	// 	end
-	// end
 endmodule
 
 module IF_ControlUnit(
 	input id_change_pc, //来自 ID 阶段的控制器�? PC 更改信号，遇�? JAL BEQ 等指令时（可能）会为 1
-	// input id_stop_pc, //来自 ID 阶段的控制器信号，是否停止更�? PC 的�??
 	output reg [1:0]if_pc_mux_sel
-	// output reg IR_we
 );
 	always @(*) begin
-		// if(id_stop_pc) begin
-		// 	if_pc_mux_sel = 2'b1x;
-		// end else begin
-		// 	if(id_change_pc) begin
-		// 		if_pc_mux_sel = 2'b01;
-		// 	end else begin
-		// 		if_pc_mux_sel = 2'b00;
-		// 	end
-		// end
 		if(id_change_pc) begin
 			if_pc_mux_sel = 2'b01;
 		end else begin

@@ -1,4 +1,3 @@
-start:
 nop
 nop
 nop
@@ -31,6 +30,13 @@ nop
 nop
 nop
 nop
+restart:
+nop
+nop
+nop
+nop
+nop
+nop
 sw $18, 0xf04($17)
 nop
 nop
@@ -43,7 +49,7 @@ nop
 nop
 nop
 nop
-addi $19, $0, 0x7888
+addi $19, $0, 0x2
 nop
 nop
 nop

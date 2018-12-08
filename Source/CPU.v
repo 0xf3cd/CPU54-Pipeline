@@ -15,7 +15,6 @@ module CPU(
     wire [1:0]if_pc_mux_sel;
     wire [31:0]next_pc;
     wire id_change_pc; //来自于 CU_ID
-    // wire id_stop; //来自于 CU_ID
 
     assign NPC = PC + 32'd4;
 
@@ -25,41 +24,6 @@ module CPU(
     wire [4:0]exe_rf_waddr;
     wire mem_rf_we;
     wire [4:0]mem_rf_waddr;
-
-    wire [5:0]if_op;
-	wire [4:0]if_rs;
-	wire [4:0]if_rt;
-	wire [4:0]if_rd;
-	wire [4:0]if_shamt;
-	wire [5:0]if_func;
-	wire [15:0]if_imm16;
-	wire [25:0]if_index;
-    InstructionDecoder IF_ID(
-        .instruction(instruction), 
-        .op(if_op), 
-        .rs(if_rs), 
-        .rt(if_rt), 
-        .rd(if_rd), 
-        .shamt(if_shamt), 
-        .func(if_func), 
-        .imm16(if_imm16), 
-        .index(if_index)
-    );
-
-    // wire if_stop;
-    // StopJudger IF_SJ(
-    //     if_op, //input [5:0]op,
-    //     if_rs, //input [4:0]rs,
-    //     if_rt, //input [4:0]rt,
-    //     if_func, //input [5:0]func,
-    //     id_rf_we, //input id_rf_we,
-    //     id_rf_waddr, //input [4:0]id_rf_waddr,
-    //     exe_rf_we, //input exe_rf_we,
-    //     exe_rf_waddr, //input [4:0]exe_rf_waddr,
-    //     mem_rf_we, //input mem_rf_we,
-    //     mem_rf_waddr, //input [4:0]mem_rf_waddr,
-    //     if_stop //output reg if_stop
-    // );
 
     IF_PC_MUX IFPM(
         .Adder(NPC), //PC + 4
@@ -79,7 +43,6 @@ module CPU(
 
     IF_ControlUnit IFC(
         .id_change_pc(id_change_pc),
-        // .id_stop_pc(if_stop), //(id_stop),
         .if_pc_mux_sel(if_pc_mux_sel)
     );
     
@@ -91,11 +54,9 @@ module CPU(
         .reset(reset),
         .we(1'b1),
         .inst(instruction),
-        // .if_stop(if_stop),
         .NPC(NPC),
         .id_inst(id_inst),
         .id_NPC(id_NPC)
-        // .id_stop(id_stop)
     );
 
     //ID 部分
@@ -161,13 +122,12 @@ module CPU(
     ID_PC_MUX IDPM(
         .Jointer(JointerJ), // ||J
         .rs_value(rs_value),
-        .Adder(NPC + se18), // PC + SignExt18
+        .Adder(PC + se18), // PC + SignExt18
         .sel(id_pc_mux_sel),
         .out(id_pc)
     );
 
     wire [1:0]id_rf_waddr_sel;
-    // wire [4:0]id_rf_waddr;
     ID_WB_RF_WAddr_MUX IWRWM(
         .rt(rt),
         .rd(rd),
@@ -179,7 +139,6 @@ module CPU(
     wire id_amux_sel;
     wire [1:0]id_bmux_sel;
     wire [3:0]aluc;
-    // wire id_rf_we;
     wire [1:0]id_rf_data_sel;
     wire id_dmem_we;
     ID_ControlUnit IDC(
@@ -193,13 +152,11 @@ module CPU(
         .mem_rf_waddr(mem_rf_waddr),
         .rs_value(rs_value),
         .rt_value(rt_value),
-        // .id_stop(id_stop),
         .id_change_pc(id_change_pc), //OK
         .id_pc_mux_sel(id_pc_mux_sel), //OK
         .id_amux_sel(id_amux_sel), //OK
         .id_bmux_sel(id_bmux_sel), //OK
         .aluc(aluc), //OK
-        // .id_stop(id_stop),
         .id_rf_we(id_rf_we), //OK
         .id_rf_waddr_sel(id_rf_waddr_sel), //OK
         .id_rf_data_sel(id_rf_data_sel), //OK
@@ -282,12 +239,16 @@ module CPU(
         .overflow()
     );
 
+    wire [31:0]MDU_out;
+    assign MDU_out = a * b;
+
     //PIPE REG EXE MEM
     wire [31:0]mem_Z;
     wire [1:0]mem_rf_data_sel;
     wire [31:0]mem_dmem_wdata;
     wire mem_dmem_we;
     wire [31:0]mem_NPC;
+    wire [31:0]mem_MDU_out;
     Pipe_emreg pipeem(
         .clk(clock),
         .reset(reset),
@@ -298,13 +259,15 @@ module CPU(
         .exe_dmem_wdata(exe_dmem_wdata), // MEM 级写入内容
         .exe_dmem_we(exe_dmem_we), // MEM 级读写指示
         .exe_NPC(exe_NPC),
+        .exe_MDU_out(MDU_out),
         .mem_rf_we(mem_rf_we),
         .mem_Z(mem_Z),
         .mem_rf_waddr(mem_rf_waddr),
         .mem_rf_data_sel(mem_rf_data_sel),
         .mem_dmem_wdata(mem_dmem_wdata),
         .mem_dmem_we(mem_dmem_we),
-        .mem_NPC(mem_NPC)
+        .mem_NPC(mem_NPC),
+        .mem_MDU_out(mem_MDU_out)
     );
 
     assign DMEM_address = mem_Z;
@@ -318,6 +281,7 @@ module CPU(
     //wire [4:0]wb_rf_waddr;
     wire [1:0]wb_rf_data_sel;
     wire [31:0]wb_NPC;
+    wire [31:0]wb_MDU_out;
     Pipe_mwreg pipemw(
         .clk(clock),
         .reset(reset),
@@ -327,18 +291,21 @@ module CPU(
         .mem_rf_waddr(mem_rf_waddr),
         .mem_rf_data_sel(mem_rf_data_sel),
         .mem_NPC(mem_NPC),
+        .mem_MDU_out(mem_MDU_out),
         .wb_rf_we(wb_rf_we), //Regfile 写有效信号
         .wb_Z(wb_Z),
         .wb_Saver(wb_Saver),
         .wb_rf_waddr(wb_rf_waddr),
         .wb_rf_data_sel(wb_rf_data_sel),
-        .wb_NPC(wb_NPC)
+        .wb_NPC(wb_NPC),
+        .wb_MDU_out(wb_MDU_out)
     );
 
     WB_DataMUX WBDM(
         .Z(wb_Z),
         .Saver(wb_Saver),
         .NPC(wb_NPC),
+        .MDU_out(wb_MDU_out),
         .sel(wb_rf_data_sel),
         .out(wb_rf_wdata)
     );

@@ -8,12 +8,14 @@ module Pipe_mwreg(
     input [4:0]mem_rf_waddr,
     input [1:0]mem_rf_data_sel,
     input [31:0]mem_NPC,
+    input [31:0]mem_MDU_out,
     output reg wb_rf_we = 1'b0, //Regfile 写有效信号
     output reg [31:0]wb_Z = 32'b0,
     output reg [31:0]wb_Saver = 32'b0,
     output reg [4:0]wb_rf_waddr = 5'b0,
     output reg [1:0]wb_rf_data_sel = 2'b0,
-    output reg [31:0]wb_NPC = 32'b0
+    output reg [31:0]wb_NPC = 32'b0,
+    output reg [31:0]wb_MDU_out = 32'b0
 );
     always @(posedge reset or posedge clk) begin
         if(reset) begin
@@ -23,6 +25,7 @@ module Pipe_mwreg(
             wb_rf_waddr <= 5'b0;
             wb_rf_data_sel <= 1'b0;
             wb_NPC <= 32'b0;
+            wb_MDU_out <= 32'b0;
         end else begin
             wb_rf_we <= mem_rf_we;
             wb_Z <= mem_Z;
@@ -30,6 +33,7 @@ module Pipe_mwreg(
             wb_rf_waddr <= mem_rf_waddr;
             wb_rf_data_sel <= mem_rf_data_sel;
             wb_NPC <= mem_NPC;
+            wb_MDU_out <= mem_MDU_out;
         end
     end
 endmodule
@@ -46,13 +50,15 @@ module Pipe_emreg(
     input [31:0]exe_dmem_wdata, // MEM 级写入内容
     input exe_dmem_we, // MEM 级读写指示
     input [31:0]exe_NPC,
+    input [31:0]exe_MDU_out,
     output reg mem_rf_we = 1'b0,
     output reg [31:0]mem_Z = 32'b0,
     output reg [4:0]mem_rf_waddr = 5'b0,
     output reg [1:0]mem_rf_data_sel = 2'b0,
     output reg [31:0]mem_dmem_wdata = 32'b0,
     output reg mem_dmem_we = 1'b0,
-    output reg [31:0]mem_NPC = 32'b0 
+    output reg [31:0]mem_NPC = 32'b0,
+    output reg [31:0]mem_MDU_out = 32'b0
 );
     always @(posedge reset or posedge clk) begin
         if(reset) begin
@@ -64,6 +70,7 @@ module Pipe_emreg(
             mem_dmem_we <= 1'b0;
             mem_NPC <= 32'b0;
             // mem_lw <= 32'b0;
+            mem_MDU_out <= 32'b0;
         end else begin
             mem_rf_we <= exe_rf_we;
             mem_Z <= exe_Z;
@@ -73,6 +80,7 @@ module Pipe_emreg(
             mem_dmem_we <= exe_dmem_we;
             mem_NPC <= exe_NPC;
             // mem_lw <= exe_lw;
+            mem_MDU_out <= exe_MDU_out;
         end
     end
 endmodule
