@@ -24,6 +24,18 @@ module CPU(
     wire [4:0]exe_rf_waddr;
     wire mem_rf_we;
     wire [4:0]mem_rf_waddr;
+    wire if_stop;
+
+    ConfJudger CJ(
+        instruction, //input [31:0]if_inst,
+        id_rf_we,
+        id_rf_waddr,
+        exe_rf_we,
+        exe_rf_waddr,
+        mem_rf_we,
+        mem_rf_waddr,
+        if_stop
+    );
 
     IF_PC_MUX IFPM(
         .Adder(NPC), //PC + 4
@@ -43,8 +55,12 @@ module CPU(
 
     IF_ControlUnit IFC(
         .id_change_pc(id_change_pc),
+        .if_stop(if_stop),
         .if_pc_mux_sel(if_pc_mux_sel)
     );
+
+    wire [31:0]pass_inst;
+    assign pass_inst = if_stop? 32'b0: instruction;
     
     //PIPE REG IF ID
     wire [31:0]id_inst;
@@ -53,7 +69,7 @@ module CPU(
         .clk(clock),
         .reset(reset),
         .we(1'b1),
-        .inst(instruction),
+        .inst(pass_inst),
         .NPC(NPC),
         .id_inst(id_inst),
         .id_NPC(id_NPC)
@@ -146,10 +162,6 @@ module CPU(
         .rs(rs),
         .rt(rt),
         .func(func),
-        .exe_rf_we(exe_rf_we),
-        .exe_rf_waddr(exe_rf_waddr),
-        .mem_rf_we(mem_rf_we),
-        .mem_rf_waddr(mem_rf_waddr),
         .rs_value(rs_value),
         .rt_value(rt_value),
         .id_change_pc(id_change_pc), //OK

@@ -85,19 +85,13 @@ module ID_ControlUnit(
 	input [4:0]rs,
 	input [4:0]rt,
 	input [5:0]func,
-	input exe_rf_we,
-	input [4:0]exe_rf_waddr,
-	input mem_rf_we,
-	input [4:0]mem_rf_waddr,
 	input [31:0]rs_value,
 	input [31:0]rt_value,
-	// input id_stop,
 	output reg id_change_pc, //OK
 	output reg [1:0]id_pc_mux_sel, //OK
 	output reg id_amux_sel, //OK
 	output reg [1:0]id_bmux_sel, //OK
 	output reg [3:0]aluc, //OK
-	// output reg id_stop,
 	output reg id_rf_we, //OK
 	output reg [1:0]id_rf_waddr_sel, //OK
 	output reg [1:0]id_rf_data_sel, //OK
@@ -364,13 +358,18 @@ endmodule
 
 module IF_ControlUnit(
 	input id_change_pc, //来自 ID 阶段的控制器�? PC 更改信号，遇�? JAL BEQ 等指令时（可能）会为 1
+	input if_stop,
 	output reg [1:0]if_pc_mux_sel
 );
 	always @(*) begin
-		if(id_change_pc) begin
-			if_pc_mux_sel = 2'b01;
+		if(if_stop) begin
+			if_pc_mux_sel = 2'b1x;
 		end else begin
-			if_pc_mux_sel = 2'b00;
-		end 
+			if(id_change_pc) begin
+				if_pc_mux_sel = 2'b01;
+			end else begin
+				if_pc_mux_sel = 2'b00;
+			end 
+		end
 	end
 endmodule
