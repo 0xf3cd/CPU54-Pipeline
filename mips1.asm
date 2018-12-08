@@ -1,3 +1,9 @@
+start:
+nop
+nop
+nop
+nop
+nop
 nop
 addi $10, $0, 0x1000
 addi $11, $0, 0x0CBD
@@ -26,8 +32,95 @@ nop
 nop
 nop
 sw $18, 0xf04($17)
-#sw $12, 0x4($10)
-#sw $13, 0x8($10)
-#sw $14, 0xB($10)
-#sw $15, 0x10($10)
-#sw $16, 0x14($10)
+nop
+nop
+nop
+nop
+nop
+addi $18, $18, 1
+nop
+nop
+nop
+nop
+nop
+addi $19, $0, 0x7888
+nop
+nop
+nop
+nop
+nop
+loop:
+addi $19, $19, -1
+nop
+nop
+nop
+nop
+nop
+nop
+bne $19, $0, loop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+j start
